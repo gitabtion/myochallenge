@@ -1,0 +1,202 @@
+{
+    "os": "Linux-5.15.90.1-microsoft-standard-WSL2-x86_64-with-glibc2.17",
+    "python": "3.8.18",
+    "heartbeatAt": "2023-10-20T11:26:57.399025",
+    "startedAt": "2023-10-20T11:26:56.307533",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/home/abtion/workspace/myochallenge/src/main_relocate.py",
+    "codePathLocal": "main_relocate.py",
+    "codePath": "main_relocate.py",
+    "host": "pc-4090",
+    "username": "abtion",
+    "executable": "/home/abtion/miniconda3/envs/myochallenge/bin/python",
+    "cpu_count": 16,
+    "cpu_count_logical": 32,
+    "cpu_freq": {
+        "current": 2995.2010000000005,
+        "min": 0.0,
+        "max": 0.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2995.201,
+            "min": 0.0,
+            "max": 0.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 491.0844039916992,
+            "used": 458.877872467041
+        }
+    },
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 4090",
+            "memory_total": 25757220864
+        }
+    ],
+    "memory": {
+        "total": 47.044734954833984
+    }
+}

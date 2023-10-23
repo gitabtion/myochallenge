@@ -1,0 +1,8 @@
+wandb
+output
+checkpoints
+.vscode
+.git
+.idea
+*.pyc
+*/__pycache__
