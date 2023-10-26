@@ -5,6 +5,8 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 from sb3_contrib import RecurrentPPO
+from stable_baselines3.common.on_policy_algorithm import OnPolicyAlgorithm
+from stable_baselines3.ppo import PPO
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import VecNormalize
 
@@ -46,17 +48,18 @@ class MyoTrainer:
         with open(os.path.join(path, "env_config.json"), "w", encoding="utf8") as f:
             json.dump(self.env_config, f)
 
-    def _init_agent(self) -> RecurrentPPO:
+    def _init_agent(self) -> OnPolicyAlgorithm:
         if self.load_model_path is not None:
-            return RecurrentPPO.load(
+            return PPO.load(
                 self.load_model_path,
                 env=self.envs,
                 tensorboard_log=self.log_dir,
                 custom_objects=self.model_config,
             )
         print("\nNo model path provided. Initializing new model.\n")
-        return RecurrentPPO(
-            "MlpLstmPolicy",
+        return PPO(
+            # "MlpLstmPolicy",
+            "MlpPolicy",
             self.envs,
             verbose=2,
             tensorboard_log=self.log_dir,

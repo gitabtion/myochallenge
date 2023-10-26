@@ -1,15 +1,14 @@
 import time
-
 import gym
 import imageio
 import numpy as np
-import myosuite
+# import myosuite
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv
 from envs.environment_factory import EnvironmentFactory
 
 def inference():
-    env = DummyVecEnv([lambda: EnvironmentFactory.create('CustomMyoRelocateP2')])
+    env = DummyVecEnv([lambda: EnvironmentFactory.create('CustomMyoRelocateP1')])
     # env = DummyVecEnv([lambda: gym.make("myoChallengeRelocateP2-v0")])
 
     env.envs[0].mj_render()

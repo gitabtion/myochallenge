@@ -59,6 +59,8 @@ class EnvironmentFactory:
             return gym.make("CustomMyoHandPoseRandom-v0", **kwargs)
         elif env_name == "CustomMyoPenTwirlRandom":
             return gym.make("CustomMyoHandPenTwirlRandom-v0", **kwargs)
+        elif env_name == "CustomMyoRelocateP1":
+            return gym.make("CustomMyoChallengeRelocateP1-v0", **kwargs)
         elif env_name == "CustomMyoRelocateP2":
             return gym.make("CustomMyoChallengeRelocateP2-v0", **kwargs)
         else:

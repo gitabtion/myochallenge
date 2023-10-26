@@ -62,7 +62,7 @@ class CustomRelocateEnv(RelocateEnvV0):
             ('act_reg', -1. * act_mag),
             ('sparse', -rot_dist - 10.0 * pos_dist),
             ('solved', solved),
-            ('drop', reach_dist > 0.5),
+            ('drop', reach_dist > 0.05),
             ('done', drop),
             ('keep_time', drop * (1.5-use_time))
         ))

@@ -1,0 +1,780 @@
+diff --git a/src/envs/__init__.py b/src/envs/__init__.py
+index 101124e..1136f41 100644
+--- a/src/envs/__init__.py
++++ b/src/envs/__init__.py
+@@ -1,95 +1,110 @@
+ import os
++
+ import gym
+ import myosuite
+ import numpy as np
+ from definitions import ROOT_DIR  # pylint: disable=import-error
+-
+ # from myosuite.envs.myo import register_env_with_variants
+ 
+ 
+ myosuite_path = os.path.join(ROOT_DIR, "data", "myosuite")
+ 
+ # MyoChallenge Baoding: Phase1 env
+-gym.envs.registration.register(
+-    id="CustomMyoChallengeBaodingP1-v1",
+-    entry_point="envs.baoding:CustomBaodingEnv",
+-    max_episode_steps=200,
+-    kwargs={
+-        "model_path": myosuite_path + "/assets/hand/myo_hand_baoding.mjb",
+-        "normalize_act": True,
+-        # 'goal_time_period': (5, 5),
+-        "goal_xrange": (0.025, 0.025),
+-        "goal_yrange": (0.028, 0.028),
+-    },
+-)
+-
+-# MyoChallenge Die: Phase1 env
+-gym.envs.registration.register(
+-    id="CustomMyoChallengeDieReorientP1-v0",
+-    entry_point="envs.reorient:CustomReorientEnv",
+-    max_episode_steps=150,
+-    kwargs={
+-        "model_path": myosuite_path + "/assets/hand/myo_hand_die.mjb",
+-        "normalize_act": True,
+-        "frame_skip": 5,
+-        "goal_pos": (-0.010, 0.010),  # +- 1 cm
+-        "goal_rot": (-1.57, 1.57),  # +-90 degrees
+-    },
+-)
++# gym.envs.registration.register(
++#     id="CustomMyoChallengeBaodingP1-v1",
++#     entry_point="envs.baoding:CustomBaodingEnv",
++#     max_episode_steps=200,
++#     kwargs={
++#         "model_path": myosuite_path + "/assets/hand/myo_hand_baoding.mjb",
++#         "normalize_act": True,
++#         # 'goal_time_period': (5, 5),
++#         "goal_xrange": (0.025, 0.025),
++#         "goal_yrange": (0.028, 0.028),
++#     },
++# )
++#
++# # MyoChallenge Die: Phase1 env
++# gym.envs.registration.register(
++#     id="CustomMyoChallengeDieReorientP1-v0",
++#     entry_point="envs.reorient:CustomReorientEnv",
++#     max_episode_steps=150,
++#     kwargs={
++#         "model_path": myosuite_path + "/assets/hand/myo_hand_die.mjb",
++#         "normalize_act": True,
++#         "frame_skip": 5,
++#         "goal_pos": (-0.010, 0.010),  # +- 1 cm
++#         "goal_rot": (-1.57, 1.57),  # +-90 degrees
++#     },
++# )
++#
++# # MyoChallenge Die: Phase2 env
++# gym.envs.registration.register(
++#     id="CustomMyoChallengeDieReorientP2-v0",
++#     entry_point="envs.reorient:CustomReorientEnv",
++#     max_episode_steps=150,
++#     kwargs={
++#         "model_path": myosuite_path + "/assets/hand/myo_hand_die.mjb",
++#         "normalize_act": True,
++#         "frame_skip": 5,
++#         # Randomization in goals
++#         'goal_pos': (-.020, .020),  # +- 2 cm
++#         'goal_rot': (-3.14, 3.14),  # +-180 degrees
++#         # Randomization in physical properties of the die
++#         'obj_size_change': 0.007,  # +-7mm delta change in object size
++#         'obj_friction_change': (0.2, 0.001, 0.00002)  # nominal: 1.0, 0.005, 0.0001
++#     },
++# )
++#
++# # MyoChallenge Baoding: Phase2 env
++# gym.envs.registration.register(
++#     id="CustomMyoChallengeBaodingP2-v1",
++#     entry_point="envs.baoding:CustomBaodingP2Env",
++#     max_episode_steps=200,
++#     kwargs={
++#         "model_path": myosuite_path + "/assets/hand/myo_hand_baoding.mjb",
++#         "normalize_act": True,
++#         "goal_time_period": (4, 6),
++#         "goal_xrange": (0.020, 0.030),
++#         "goal_yrange": (0.022, 0.032),
++#         # Randomization in physical properties of the baoding balls
++#         "obj_size_range": (0.018, 0.024),  # Object size range. Nominal 0.022
++#         "obj_mass_range": (0.030, 0.300),  # Object weight range. Nominal 43 gms
++#         "obj_friction_change": (0.2, 0.001, 0.00002),  # nominal: 1.0, 0.005, 0.0001
++#         "task_choice": "random",
++#     },
++# )
++#
++# # MyoChallenge Baoding: MixtureModelEnv
++# gym.envs.registration.register(
++#     id="MixtureModelBaoding-v1",
++#     entry_point="envs.baoding:MixtureModelBaodingEnv",
++#     max_episode_steps=200,
++#     kwargs={
++#         "model_path": myosuite_path + "/assets/hand/myo_hand_baoding.mjb",
++#         "normalize_act": True,
++#         "goal_time_period": (4, 6),
++#         "goal_xrange": (0.020, 0.030),
++#         "goal_yrange": (0.022, 0.032),
++#         # Randomization in physical properties of the baoding balls
++#         "obj_size_range": (0.018, 0.024),  # Object size range. Nominal 0.022
++#         "obj_mass_range": (0.030, 0.300),  # Object weight range. Nominal 43 gms
++#         "obj_friction_change": (0.2, 0.001, 0.00002),  # nominal: 1.0, 0.005, 0.0001
++#         "task_choice": "random",
++#     },
++# )
+ 
+-# MyoChallenge Die: Phase2 env
+ gym.envs.registration.register(
+-    id="CustomMyoChallengeDieReorientP2-v0",
+-    entry_point="envs.reorient:CustomReorientEnv",
++    id='CustomMyoChallengeRelocateP1-v0',
++    entry_point='envs.relocate:CustomRelocateEnv',
+     max_episode_steps=150,
+     kwargs={
+-        "model_path": myosuite_path + "/assets/hand/myo_hand_die.mjb",
+-        "normalize_act": True,
+-        "frame_skip": 5,
+-        # Randomization in goals
+-        'goal_pos': (-.020, .020),  # +- 2 cm
+-        'goal_rot': (-3.14, 3.14),  # +-180 degrees
+-        # Randomization in physical properties of the die
+-        'obj_size_change': 0.007,  # +-7mm delta change in object size
+-        'obj_friction_change': (0.2, 0.001, 0.00002)  # nominal: 1.0, 0.005, 0.0001
+-    },
+-)
+-
+-# MyoChallenge Baoding: Phase2 env
+-gym.envs.registration.register(
+-    id="CustomMyoChallengeBaodingP2-v1",
+-    entry_point="envs.baoding:CustomBaodingP2Env",
+-    max_episode_steps=200,
+-    kwargs={
+-        "model_path": myosuite_path + "/assets/hand/myo_hand_baoding.mjb",
+-        "normalize_act": True,
+-        "goal_time_period": (4, 6),
+-        "goal_xrange": (0.020, 0.030),
+-        "goal_yrange": (0.022, 0.032),
+-        # Randomization in physical properties of the baoding balls
+-        "obj_size_range": (0.018, 0.024),  # Object size range. Nominal 0.022
+-        "obj_mass_range": (0.030, 0.300),  # Object weight range. Nominal 43 gms
+-        "obj_friction_change": (0.2, 0.001, 0.00002),  # nominal: 1.0, 0.005, 0.0001
+-        "task_choice": "random",
+-    },
+-)
+-
+-# MyoChallenge Baoding: MixtureModelEnv
+-gym.envs.registration.register(
+-    id="MixtureModelBaoding-v1",
+-    entry_point="envs.baoding:MixtureModelBaodingEnv",
+-    max_episode_steps=200,
+-    kwargs={
+-        "model_path": myosuite_path + "/assets/hand/myo_hand_baoding.mjb",
+-        "normalize_act": True,
+-        "goal_time_period": (4, 6),
+-        "goal_xrange": (0.020, 0.030),
+-        "goal_yrange": (0.022, 0.032),
+-        # Randomization in physical properties of the baoding balls
+-        "obj_size_range": (0.018, 0.024),  # Object size range. Nominal 0.022
+-        "obj_mass_range": (0.030, 0.300),  # Object weight range. Nominal 43 gms
+-        "obj_friction_change": (0.2, 0.001, 0.00002),  # nominal: 1.0, 0.005, 0.0001
+-        "task_choice": "random",
++        'model_path': myosuite_path + '/assets/myo_sim/arm/myoarm_object_v0.16(mj237).mjb',
++        'normalize_act': True,
++        'frame_skip': 5,
++        'pos_th': 0.1,  # cover entire base of the receptacle
++        'rot_th': np.inf,  # ignore rotation errors
++        'target_xyz_range': {'high': [0.2, -.35, 0.9], 'low': [0.0, -.1, 0.9]},
++        'target_rxryrz_range': {'high': [0.0, 0.0, 0.0], 'low': [0.0, 0.0, 0.0]}
+     },
+ )
+ 
+@@ -111,7 +126,7 @@ gym.envs.registration.register(
+         # 'obj_geom_range': {'high': [.025, .025, .025], 'low': [.015, 0.015, 0.015]},
+         # 'obj_mass_range': {'high': 0.200, 'low': 0.050},  # 50gms to 200 gms
+         # 'obj_friction_range': {'high': [1.2, 0.006, 0.00012], 'low': [0.8, 0.004, 0.00008]}
+-    }
++    },
+ )
+ 
+ # Elbow posing ==============================
+diff --git a/src/envs/environment_factory.py b/src/envs/environment_factory.py
+index c3ef60f..c6b8b3e 100644
+--- a/src/envs/environment_factory.py
++++ b/src/envs/environment_factory.py
+@@ -59,6 +59,8 @@ class EnvironmentFactory:
+             return gym.make("CustomMyoHandPoseRandom-v0", **kwargs)
+         elif env_name == "CustomMyoPenTwirlRandom":
+             return gym.make("CustomMyoHandPenTwirlRandom-v0", **kwargs)
++        elif env_name == "CustomMyoRelocateP1":
++            return gym.make("CustomMyoChallengeRelocateP1-v0", **kwargs)
+         elif env_name == "CustomMyoRelocateP2":
+             return gym.make("CustomMyoChallengeRelocateP2-v0", **kwargs)
+         else:
+diff --git a/src/envs/relocate.py b/src/envs/relocate.py
+index 1be2ba1..bf4a0b3 100644
+--- a/src/envs/relocate.py
++++ b/src/envs/relocate.py
+@@ -62,7 +62,7 @@ class CustomRelocateEnv(RelocateEnvV0):
+             ('act_reg', -1. * act_mag),
+             ('sparse', -rot_dist - 10.0 * pos_dist),
+             ('solved', solved),
+-            ('drop', reach_dist > 0.5),
++            ('drop', reach_dist > 0.05),
+             ('done', drop),
+             ('keep_time', drop * (1.5-use_time))
+         ))
+diff --git a/src/envs/relocate_dm.py b/src/envs/relocate_dm.py
+index 2f15bd4..17e7e8a 100644
+--- a/src/envs/relocate_dm.py
++++ b/src/envs/relocate_dm.py
+@@ -34,6 +34,7 @@ class CustomRelocateEnv(RelocateEnvV0):
+         super().__init__(model_path=model_path, obsd_model_path=obsd_model_path, seed=seed, env_credits=self.MYO_CREDIT)
+         self._setup(**kwargs)
+ 
++
+     def _setup(self,
+                target_xyz_range,  # target position range (relative to initial pos)
+                target_rxryrz_range,  # target rotation range (relative to initial rot)
+diff --git a/src/eval_sb3.py b/src/eval_sb3.py
+index c3e99e3..bc8325f 100644
+--- a/src/eval_sb3.py
++++ b/src/eval_sb3.py
+@@ -1,15 +1,14 @@
+ import time
+-
+ import gym
+ import imageio
+ import numpy as np
+-import myosuite
++# import myosuite
+ from stable_baselines3 import PPO
+ from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv
+ from envs.environment_factory import EnvironmentFactory
+ 
+ def inference():
+-    env = DummyVecEnv([lambda: EnvironmentFactory.create('CustomMyoRelocateP2')])
++    env = DummyVecEnv([lambda: EnvironmentFactory.create('CustomMyoRelocateP1')])
+     # env = DummyVecEnv([lambda: gym.make("myoChallengeRelocateP2-v0")])
+ 
+     env.envs[0].mj_render()
+diff --git a/src/main_relocate.py b/src/main_relocate.py
+index 67584e0..7548540 100644
+--- a/src/main_relocate.py
++++ b/src/main_relocate.py
+@@ -8,6 +8,7 @@ from stable_baselines3.common.callbacks import CheckpointCallback
+ from stable_baselines3.common.monitor import Monitor
+ from stable_baselines3.common.vec_env import VecNormalize
+ from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
++from stable_baselines3.common.running_mean_std import RunningMeanStd
+ import wandb
+ from wandb.integration.sb3 import WandbCallback
+ from definitions import ROOT_DIR
+@@ -16,25 +17,25 @@ from metrics.custom_callbacks import EnvDumpCallback, EvalCallback
+ from train.trainer import MyoTrainer
+ 
+ # define constants
+-ENV_NAME = "CustomMyoRelocateP2"
++ENV_NAME = "CustomMyoRelocateP1"
+ 
+ now = datetime.now().strftime("%Y-%m-%d/%H-%M-%S")
+ TENSORBOARD_LOG = os.path.join(ROOT_DIR, "output", "training", now)
+ 
+-load_folder = "output/training/2023-10-21/02-18-01/"
+-PATH_TO_NORMALIZED_ENV = load_folder + "rl_models_vecnormalize_89600000_steps.pkl"
+-PATH_TO_PRETRAINED_NET = load_folder + "rl_models_89600000_steps.zip"
++load_folder = os.path.join(ROOT_DIR, "trained_models/")
++PATH_TO_NORMALIZED_ENV = load_folder + "env_320000000_steps"
++PATH_TO_PRETRAINED_NET = load_folder + "rl_models_320000000_steps.zip"
+ 
+ # Reward structure and task parameters:
+ config = {
+-    "obs_keys": ['hand_qpos_corrected', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
++    "obs_keys": ['hand_qpos', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
+                  'rot_err'],
+     "weighted_reward_keys": {
+-        "pos_dist": 10.0,
++        "pos_dist": 15.0,
+         "rot_dist": 0,
+         "act_reg": 0.01,
+         "solved": 100.,
+-        "drop": -5.,
++        "drop": -1.,
+         # "sparse": 10.0,
+         "keep_time": -200.,
+     },
+@@ -42,10 +43,10 @@ config = {
+     'frame_skip': 5,
+     'pos_th': 0.1,  # cover entire base of the receptacle
+     'rot_th': np.inf,  # ignore rotation errors
+-    'qpos_noise_range': 0.01,  # jnt initialization range
++    # 'qpos_noise_range': 0.01,  # jnt initialization range
+     'target_xyz_range': {'high': [0.3, -.1, 0.9], 'low': [0.0, -.45, 0.9]},
+-    'target_rxryrz_range': {'high': [0.2, 0.2, 0.2], 'low': [-.2, -.2, -.2]},
+-    'obj_xyz_range': {'high': [0.1, -.15, 0.95], 'low': [-0.1, -.35, 0.95]},
++    # 'target_rxryrz_range': {'high': [0.2, 0.2, 0.2], 'low': [-.2, -.2, -.2]},
++    # 'obj_xyz_range': {'high': [0.1, -.15, 0.95], 'low': [-0.1, -.35, 0.95]},
+     # 'obj_geom_range': {'high': [.025, .025, .025], 'low': [.015, 0.015, 0.015]},
+     # 'obj_mass_range': {'high': 0.200, 'low': 0.050},  # 50gms to 200 gms
+     # 'obj_friction_range': {'high': [1.2, 0.006, 0.00012], 'low': [0.8, 0.004, 0.00008]}
+@@ -68,6 +69,11 @@ def make_parallel_envs(env_config, num_env, start_index=0,
+ 
+ 
+ if __name__ == "__main__":
++    batch_size = 2048
++    n_train_env, n_eval_env = 16, 10
++    gamma = 0.999
++    n_steps = batch_size//n_train_env
++
+     # ensure tensorboard log directory exists and copy this file to track
+     os.makedirs(TENSORBOARD_LOG, exist_ok=True)
+     shutil.copy(os.path.abspath(__file__), TENSORBOARD_LOG)
+@@ -75,31 +81,35 @@ if __name__ == "__main__":
+     run = wandb.init(
+         project="sb3_arm",
+         config=config,
++        name=now.replace('/', '_'),
+         sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
+         monitor_gym=True,  # auto-upload the videos of agents playing the game
+         save_code=True,  # optional
+     )
+ 
+     # Create and wrap the training and evaluations environments
+-    envs = make_parallel_envs(config, 128, vec_env_cls=SubprocVecEnv)
++    envs = make_parallel_envs(config, 2, vec_env_cls=SubprocVecEnv)
+     envs = VecNormalize.load(PATH_TO_NORMALIZED_ENV, envs)
++    envs.ret_rms = RunningMeanStd(shape=())
++    envs.old_reward = np.array([])
+     # envs = VecNormalize(envs, norm_obs=True, norm_reward=True, clip_obs=10.)
+ 
+     eval_env = make_parallel_envs(config, num_env=10, vec_env_cls=DummyVecEnv)
+-    eval_env = VecNormalize.load(PATH_TO_NORMALIZED_ENV, eval_env)
+-    # eval_env = VecNormalize(eval_env, norm_obs=True, norm_reward=True, clip_obs=10.)
++    # eval_env = VecNormalize.load(PATH_TO_NORMALIZED_ENV, eval_env)
++    eval_env = VecNormalize(eval_env, norm_obs=True, norm_reward=False, clip_obs=10, training=False)
++    eval_env.obs_rms = envs.obs_rms
+ 
+     # Define callbacks for evaluation and saving the agent
+     eval_callback = EvalCallback(
+         eval_env=eval_env,
+         n_eval_episodes=10,
+-        eval_freq=10_000,
++        eval_freq=50_000,
+         verbose=1,
+         save_path=TENSORBOARD_LOG,
+     )
+ 
+     checkpoint_callback = CheckpointCallback(
+-        save_freq=10_000,
++        save_freq=50_000,
+         save_path=TENSORBOARD_LOG,
+         save_vecnormalize=True,
+         name_prefix='rl_models',
+@@ -118,9 +128,10 @@ if __name__ == "__main__":
+             # "lr_schedule": lambda _: 5e-05,
+             "learning_rate": lambda _: 1e-05,
+             "clip_range": lambda _: 0.2,
+-            'gamma': 0.999,
+-            'batch_size': 2048,
+-            "n_steps": 128,
++            'gamma': gamma,
++            'batch_size': batch_size,
++            "n_steps": n_steps,
++            # "policy_kwargs": {"net_arch": [dict(pi=[128, 128], vf=[128, 128])]}
+         },
+         callbacks=[eval_callback, checkpoint_callback],
+         timesteps=600_000_000,
+diff --git a/src/train/trainer.py b/src/train/trainer.py
+index 82df00e..2f4f04e 100644
+--- a/src/train/trainer.py
++++ b/src/train/trainer.py
+@@ -5,6 +5,8 @@ from dataclasses import dataclass, field
+ from typing import List, Optional
+ 
+ from sb3_contrib import RecurrentPPO
++from stable_baselines3.common.on_policy_algorithm import OnPolicyAlgorithm
++from stable_baselines3.ppo import PPO
+ from stable_baselines3.common.callbacks import BaseCallback
+ from stable_baselines3.common.vec_env import VecNormalize
+ 
+@@ -46,17 +48,18 @@ class MyoTrainer:
+         with open(os.path.join(path, "env_config.json"), "w", encoding="utf8") as f:
+             json.dump(self.env_config, f)
+ 
+-    def _init_agent(self) -> RecurrentPPO:
++    def _init_agent(self) -> OnPolicyAlgorithm:
+         if self.load_model_path is not None:
+-            return RecurrentPPO.load(
++            return PPO.load(
+                 self.load_model_path,
+                 env=self.envs,
+                 tensorboard_log=self.log_dir,
+                 custom_objects=self.model_config,
+             )
+         print("\nNo model path provided. Initializing new model.\n")
+-        return RecurrentPPO(
+-            "MlpLstmPolicy",
++        return PPO(
++            # "MlpLstmPolicy",
++            "MlpPolicy",
+             self.envs,
+             verbose=2,
+             tensorboard_log=self.log_dir,
+diff --git a/src/ts_relocate.py b/src/ts_relocate.py
+new file mode 100644
+index 0000000..be4a8a5
+--- /dev/null
++++ b/src/ts_relocate.py
+@@ -0,0 +1,162 @@
++"""
++@Time: 24/10/2023 下午8:20
++@Author: Heng Cai
++@FileName: ts_relocate.py
++@Copyright: 2020-2023 CarbonSilicon.ai
++@Description:
++"""
++import os
++import shutil
++from datetime import datetime
++from typing import Union, Type, Optional
++import torch, numpy as np, torch.nn as nn
++from torch.utils.tensorboard import SummaryWriter
++import myosuite
++from definitions import ROOT_DIR
++from envs.environment_factory import EnvironmentFactory
++from torch.distributions import Independent, Normal
++import tianshou as ts
++from tianshou.env import DummyVectorEnv, SubprocVectorEnv, VectorEnvNormObs, ShmemVectorEnv
++from tianshou.utils.net.continuous import ActorProb, Critic
++from shimmy import GymV21CompatibilityV0
++from tianshou.utils.net.common import Net, ActorCritic
++import gymnasium as gym
++
++ENV_NAME = "CustomMyoChallengeRelocateP2-v0"
++
++now = datetime.now().strftime("%Y-%m-%d/%H-%M-%S")
++TENSORBOARD_LOG = os.path.join(ROOT_DIR, "output", "training", now)
++
++config = {
++    "obs_keys": ['hand_qpos_corrected', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
++                 'rot_err'],
++    "weighted_reward_keys": {
++        "pos_dist": 15.0,
++        "rot_dist": 0,
++        "act_reg": 0.01,
++        "solved": 100.,
++        "drop": -1.,
++        # "sparse": 10.0,
++        "keep_time": -200.,
++    },
++    'normalize_act': True,
++    'frame_skip': 5,
++    'pos_th': 0.1,  # cover entire base of the receptacle
++    'rot_th': np.inf,  # ignore rotation errors
++    # 'qpos_noise_range': 0.01,  # jnt initialization range
++    # 'target_xyz_range': {'high': [0.3, -.1, 0.9], 'low': [0.0, -.45, 0.9]},
++    # 'target_rxryrz_range': {'high': [0.2, 0.2, 0.2], 'low': [-.2, -.2, -.2]},
++    # 'obj_xyz_range': {'high': [0.1, -.15, 0.95], 'low': [-0.1, -.35, 0.95]},
++    # 'obj_geom_range': {'high': [.025, .025, .025], 'low': [.015, 0.015, 0.015]},
++    # 'obj_mass_range': {'high': 0.200, 'low': 0.050},  # 50gms to 200 gms
++    # 'obj_friction_range': {'high': [1.2, 0.006, 0.00012], 'low': [0.8, 0.004, 0.00008]}
++}
++
++
++def make_parallel_envs(env_config, num_env, start_index=0,
++                       vec_env_cls: Optional[Type[Union[DummyVectorEnv, SubprocVectorEnv, ShmemVectorEnv]]] = None, seed=42):
++    def make_env(rank):
++        def _thunk():
++            env = EnvironmentFactory.create("CustomMyoRelocateP1", **env_config)
++            env = gym.make("GymV21Environment-v0", env_id="CustomMyoChallengeRelocateP1-v0", env=env)
++            env.gym_env.seed(seed + rank)
++            return env
++
++
++        return _thunk
++
++    return vec_env_cls([make_env(i + start_index) for i in range(num_env)])
++
++
++def dist(*logits):
++    return Independent(Normal(*logits), 1)
++
++
++
++if __name__ == '__main__':
++    os.makedirs(TENSORBOARD_LOG, exist_ok=True)
++    shutil.copy(os.path.abspath(__file__), TENSORBOARD_LOG)
++
++    lr, epoch, batch_size = 5e-5, 400, 2048
++    train_num, test_num = 128, 10
++    gamma, n_step, target_freq = 0.999, 3, 320
++    buffer_size = 624000
++    eps_train, eps_test = 0.1, 0.05
++    step_per_epoch, step_per_collect = 1024000, 2048
++    logger = ts.utils.WandbLogger(
++        project='ts_arm',
++        run_id=now.replace('/', '_'),
++        config=config)
++    logger.load(SummaryWriter(TENSORBOARD_LOG))
++
++    envs = make_parallel_envs(config, train_num, vec_env_cls=ShmemVectorEnv)
++    envs = VectorEnvNormObs(envs)
++
++    eval_envs = make_parallel_envs(config, test_num, vec_env_cls=DummyVectorEnv)
++    eval_envs = VectorEnvNormObs(eval_envs, update_obs_rms=False)
++    eval_envs.set_obs_rms(envs.get_obs_rms())
++
++    env = eval_envs.venv.workers[0].env
++
++    state_shape = env.observation_space.shape or env.observation_space.n
++    action_shape = env.action_space.shape or env.action_space.n
++    net_a = Net(
++        state_shape,
++        hidden_sizes=[128, 128, 128],
++        activation=nn.ReLU,
++        device='cuda',
++    )
++    actor = ActorProb(
++        net_a,
++        action_shape,
++        unbounded=True,
++        device='cuda',
++    ).to('cuda')
++    net_c = Net(
++        state_shape,
++        hidden_sizes=[128, 128, 128],
++        activation=nn.ReLU,
++        device='cuda',
++    )
++    critic = Critic(net_c, device='cuda').to('cuda')
++    actor_critic = ActorCritic(actor, critic)
++    optim = torch.optim.Adam(actor_critic.parameters(), lr=lr)
++
++    policy = ts.policy.PPOPolicy(
++        actor=actor,
++        critic=critic,
++        dist_fn=dist,
++        optim=optim,
++        discount_factor=gamma,
++        action_space=env.action_space,
++        reward_normalization=True,
++    )
++    train_collector = ts.data.Collector(policy, envs, ts.data.VectorReplayBuffer(buffer_size, train_num),
++                                        exploration_noise=True)
++    test_collector = ts.data.Collector(policy, eval_envs, exploration_noise=True)
++
++
++    def save_best_fn(policy):
++        state = {"model": policy.state_dict(), "obs_rms": envs.get_obs_rms()}
++        torch.save(state, os.path.join(TENSORBOARD_LOG, "policy.pth"))
++
++    result = ts.trainer.OnpolicyTrainer(
++        policy=policy,
++        train_collector=train_collector,
++        test_collector=test_collector,
++        max_epoch=epoch,
++        step_per_epoch=step_per_epoch,
++        repeat_per_collect=4,
++        episode_per_test=test_num,
++        batch_size=batch_size,
++        step_per_collect=int(batch_size*128/train_num),
++        save_best_fn=save_best_fn,
++        logger=logger,
++        test_in_train=False, ).run()
++    print(f'Finished training! Use {result["duration"]}')
++
++    policy.eval()
++    eval_envs.seed(42)
++    test_collector.reset()
++    result = test_collector.collect(n_episode=test_num, render=0.0)
++    print(f'Final reward: {result["rews"].mean()}, length: {result["lens"].mean()}')
+diff --git a/src/ts_relocate_sac.py b/src/ts_relocate_sac.py
+new file mode 100644
+index 0000000..586acbf
+--- /dev/null
++++ b/src/ts_relocate_sac.py
+@@ -0,0 +1,174 @@
++"""
++@Time: 24/10/2023 下午8:20
++@Author: Heng Cai
++@FileName: ts_relocate.py
++@Copyright: 2020-2023 CarbonSilicon.ai
++@Description:
++"""
++import os
++import shutil
++from datetime import datetime
++from typing import Union, Type, Optional
++import torch, numpy as np, torch.nn as nn
++from tianshou.policy import SACPolicy
++from torch.utils.tensorboard import SummaryWriter
++import myosuite
++from definitions import ROOT_DIR
++from envs.environment_factory import EnvironmentFactory
++from torch.distributions import Independent, Normal
++import tianshou as ts
++from tianshou.env import DummyVectorEnv, SubprocVectorEnv, VectorEnvNormObs, ShmemVectorEnv
++from tianshou.utils.net.continuous import ActorProb, Critic
++from shimmy import GymV21CompatibilityV0
++from tianshou.utils.net.common import Net, ActorCritic
++import gymnasium as gym
++
++ENV_NAME = "CustomMyoChallengeRelocateP2-v0"
++
++now = datetime.now().strftime("%Y-%m-%d/%H-%M-%S")
++TENSORBOARD_LOG = os.path.join(ROOT_DIR, "output", "training", now)
++
++config = {
++    "obs_keys": ['hand_qpos_corrected', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
++                 'rot_err'],
++    "weighted_reward_keys": {
++        "pos_dist": 15.0,
++        "rot_dist": 0,
++        "act_reg": 0.01,
++        "solved": 100.,
++        "drop": -1.,
++        # "sparse": 10.0,
++        "keep_time": -200.,
++    },
++    'normalize_act': True,
++    'frame_skip': 5,
++    'pos_th': 0.1,  # cover entire base of the receptacle
++    'rot_th': np.inf,  # ignore rotation errors
++    # 'qpos_noise_range': 0.01,  # jnt initialization range
++    # 'target_xyz_range': {'high': [0.3, -.1, 0.9], 'low': [0.0, -.45, 0.9]},
++    # 'target_rxryrz_range': {'high': [0.2, 0.2, 0.2], 'low': [-.2, -.2, -.2]},
++    # 'obj_xyz_range': {'high': [0.1, -.15, 0.95], 'low': [-0.1, -.35, 0.95]},
++    # 'obj_geom_range': {'high': [.025, .025, .025], 'low': [.015, 0.015, 0.015]},
++    # 'obj_mass_range': {'high': 0.200, 'low': 0.050},  # 50gms to 200 gms
++    # 'obj_friction_range': {'high': [1.2, 0.006, 0.00012], 'low': [0.8, 0.004, 0.00008]}
++}
++
++
++def make_parallel_envs(env_config, num_env, start_index=0,
++                       vec_env_cls: Optional[Type[Union[DummyVectorEnv, SubprocVectorEnv, ShmemVectorEnv]]] = None, seed=42):
++    def make_env(rank):
++        def _thunk():
++            env = EnvironmentFactory.create("CustomMyoRelocateP1", **env_config)
++            env = gym.make("GymV21Environment-v0", env_id="CustomMyoChallengeRelocateP1-v0", env=env)
++            env.gym_env.seed(seed + rank)
++            return env
++
++
++        return _thunk
++
++    return vec_env_cls([make_env(i + start_index) for i in range(num_env)])
++
++
++def dist(*logits):
++    return Independent(Normal(*logits), 1)
++
++
++
++if __name__ == '__main__':
++    os.makedirs(TENSORBOARD_LOG, exist_ok=True)
++    shutil.copy(os.path.abspath(__file__), TENSORBOARD_LOG)
++
++    lr, epoch, batch_size = 5e-5, 400, 64
++    train_num, test_num = 8, 10
++    gamma, n_step, target_freq = 0.999, 3, 320
++    buffer_size = 624000
++    eps_train, eps_test = 0.1, 0.05
++    step_per_epoch, step_per_collect = 1024000, 2048
++    logger = ts.utils.WandbLogger(
++        project='ts_arm',
++        run_id=now.replace('/', '_'),
++        config=config)
++    logger.load(SummaryWriter(TENSORBOARD_LOG))
++
++    envs = make_parallel_envs(config, train_num, vec_env_cls=ShmemVectorEnv)
++    envs = VectorEnvNormObs(envs)
++
++    eval_envs = make_parallel_envs(config, test_num, vec_env_cls=DummyVectorEnv)
++    eval_envs = VectorEnvNormObs(eval_envs, update_obs_rms=False)
++    eval_envs.set_obs_rms(envs.get_obs_rms())
++
++    env = eval_envs.venv.workers[0].env
++    device = 'cuda'
++
++    state_shape = env.observation_space.shape or env.observation_space.n
++    action_shape = env.action_space.shape or env.action_space.n
++    net_a = Net(state_shape, hidden_sizes=[256, 256], device=device)
++    actor = ActorProb(
++        net_a,
++        action_shape,
++        device=device,
++        unbounded=True,
++        conditioned_sigma=True,
++    ).to(device)
++    actor_optim = torch.optim.Adam(actor.parameters(), lr=lr)
++    net_c1 = Net(
++        state_shape,
++        action_shape,
++        hidden_sizes=[256, 256],
++        concat=True,
++        device=device,
++    )
++    net_c2 = Net(
++        state_shape,
++        action_shape,
++        hidden_sizes=[256, 256],
++        concat=True,
++        device=device,
++    )
++    critic1 = Critic(net_c1, device=device).to(device)
++    critic1_optim = torch.optim.Adam(critic1.parameters(), lr=1e-4)
++    critic2 = Critic(net_c2, device=device).to(device)
++    critic2_optim = torch.optim.Adam(critic2.parameters(), lr=1e-4)
++
++    policy = SACPolicy(
++        actor=actor,
++        actor_optim=actor_optim,
++        critic1=critic1,
++        critic1_optim=critic1_optim,
++        critic2=critic2,
++        critic2_optim=critic2_optim,
++        tau=0.005,
++        gamma=gamma,
++        alpha=0.2,
++        estimation_step=1,
++        action_space=env.action_space,
++    )
++    train_collector = ts.data.Collector(policy, envs, ts.data.VectorReplayBuffer(buffer_size, train_num),
++                                        exploration_noise=True)
++    test_collector = ts.data.Collector(policy, eval_envs, exploration_noise=True)
++
++
++    def save_best_fn(policy):
++        state = {"model": policy.state_dict(), "obs_rms": envs.get_obs_rms()}
++        torch.save(state, os.path.join(TENSORBOARD_LOG, "policy.pth"))
++
++    result = ts.trainer.OffpolicyTrainer(
++        policy=policy,
++        train_collector=train_collector,
++        test_collector=test_collector,
++        max_epoch=epoch,
++        step_per_epoch=step_per_epoch,
++        # repeat_per_collect=4,
++        episode_per_test=test_num,
++        batch_size=batch_size,
++        step_per_collect=batch_size,
++        save_best_fn=save_best_fn,
++        logger=logger,
++        test_in_train=False, ).run()
++    print(f'Finished training! Use {result["duration"]}')
++
++    policy.eval()
++    eval_envs.seed(42)
++    test_collector.reset()
++    result = test_collector.collect(n_episode=test_num, render=0.0)
++    print(f'Final reward: {result["rews"].mean()}, length: {result["lens"].mean()}')
+diff --git a/src/wandb/latest-run b/src/wandb/latest-run
+index 57990dd..878d02c 120000
+--- a/src/wandb/latest-run
++++ b/src/wandb/latest-run
+@@ -1 +1 @@
+-run-20231020_192656-pr0q3vjd
+\ No newline at end of file
++run-20231026_150020-cszzailc
+\ No newline at end of file

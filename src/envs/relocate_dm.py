@@ -34,6 +34,7 @@ class CustomRelocateEnv(RelocateEnvV0):
         super().__init__(model_path=model_path, obsd_model_path=obsd_model_path, seed=seed, env_credits=self.MYO_CREDIT)
         self._setup(**kwargs)
 
+
     def _setup(self,
                target_xyz_range,  # target position range (relative to initial pos)
                target_rxryrz_range,  # target rotation range (relative to initial rot)

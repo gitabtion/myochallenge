@@ -1,95 +1,110 @@
 import os
+
 import gym
 import myosuite
 import numpy as np
 from definitions import ROOT_DIR  # pylint: disable=import-error
-
 # from myosuite.envs.myo import register_env_with_variants
 
 
 myosuite_path = os.path.join(ROOT_DIR, "data", "myosuite")
 
 # MyoChallenge Baoding: Phase1 env
-gym.envs.registration.register(
-    id="CustomMyoChallengeBaodingP1-v1",
-    entry_point="envs.baoding:CustomBaodingEnv",
-    max_episode_steps=200,
-    kwargs={
-        "model_path": myosuite_path + "/assets/hand/myo_hand_baoding.mjb",
-        "normalize_act": True,
-        # 'goal_time_period': (5, 5),
-        "goal_xrange": (0.025, 0.025),
-        "goal_yrange": (0.028, 0.028),
-    },
-)
+# gym.envs.registration.register(
+#     id="CustomMyoChallengeBaodingP1-v1",
+#     entry_point="envs.baoding:CustomBaodingEnv",
+#     max_episode_steps=200,
+#     kwargs={
+#         "model_path": myosuite_path + "/assets/hand/myo_hand_baoding.mjb",
+#         "normalize_act": True,
+#         # 'goal_time_period': (5, 5),
+#         "goal_xrange": (0.025, 0.025),
+#         "goal_yrange": (0.028, 0.028),
+#     },
+# )
+#
+# # MyoChallenge Die: Phase1 env
+# gym.envs.registration.register(
+#     id="CustomMyoChallengeDieReorientP1-v0",
+#     entry_point="envs.reorient:CustomReorientEnv",
+#     max_episode_steps=150,
+#     kwargs={
+#         "model_path": myosuite_path + "/assets/hand/myo_hand_die.mjb",
+#         "normalize_act": True,
+#         "frame_skip": 5,
+#         "goal_pos": (-0.010, 0.010),  # +- 1 cm
+#         "goal_rot": (-1.57, 1.57),  # +-90 degrees
+#     },
+# )
+#
+# # MyoChallenge Die: Phase2 env
+# gym.envs.registration.register(
+#     id="CustomMyoChallengeDieReorientP2-v0",
+#     entry_point="envs.reorient:CustomReorientEnv",
+#     max_episode_steps=150,
+#     kwargs={
+#         "model_path": myosuite_path + "/assets/hand/myo_hand_die.mjb",
+#         "normalize_act": True,
+#         "frame_skip": 5,
+#         # Randomization in goals
+#         'goal_pos': (-.020, .020),  # +- 2 cm
+#         'goal_rot': (-3.14, 3.14),  # +-180 degrees
+#         # Randomization in physical properties of the die
+#         'obj_size_change': 0.007,  # +-7mm delta change in object size
+#         'obj_friction_change': (0.2, 0.001, 0.00002)  # nominal: 1.0, 0.005, 0.0001
+#     },
+# )
+#
+# # MyoChallenge Baoding: Phase2 env
+# gym.envs.registration.register(
+#     id="CustomMyoChallengeBaodingP2-v1",
+#     entry_point="envs.baoding:CustomBaodingP2Env",
+#     max_episode_steps=200,
+#     kwargs={
+#         "model_path": myosuite_path + "/assets/hand/myo_hand_baoding.mjb",
+#         "normalize_act": True,
+#         "goal_time_period": (4, 6),
+#         "goal_xrange": (0.020, 0.030),
+#         "goal_yrange": (0.022, 0.032),
+#         # Randomization in physical properties of the baoding balls
+#         "obj_size_range": (0.018, 0.024),  # Object size range. Nominal 0.022
+#         "obj_mass_range": (0.030, 0.300),  # Object weight range. Nominal 43 gms
+#         "obj_friction_change": (0.2, 0.001, 0.00002),  # nominal: 1.0, 0.005, 0.0001
+#         "task_choice": "random",
+#     },
+# )
+#
+# # MyoChallenge Baoding: MixtureModelEnv
+# gym.envs.registration.register(
+#     id="MixtureModelBaoding-v1",
+#     entry_point="envs.baoding:MixtureModelBaodingEnv",
+#     max_episode_steps=200,
+#     kwargs={
+#         "model_path": myosuite_path + "/assets/hand/myo_hand_baoding.mjb",
+#         "normalize_act": True,
+#         "goal_time_period": (4, 6),
+#         "goal_xrange": (0.020, 0.030),
+#         "goal_yrange": (0.022, 0.032),
+#         # Randomization in physical properties of the baoding balls
+#         "obj_size_range": (0.018, 0.024),  # Object size range. Nominal 0.022
+#         "obj_mass_range": (0.030, 0.300),  # Object weight range. Nominal 43 gms
+#         "obj_friction_change": (0.2, 0.001, 0.00002),  # nominal: 1.0, 0.005, 0.0001
+#         "task_choice": "random",
+#     },
+# )
 
-# MyoChallenge Die: Phase1 env
 gym.envs.registration.register(
-    id="CustomMyoChallengeDieReorientP1-v0",
-    entry_point="envs.reorient:CustomReorientEnv",
+    id='CustomMyoChallengeRelocateP1-v0',
+    entry_point='envs.relocate:CustomRelocateEnv',
     max_episode_steps=150,
     kwargs={
-        "model_path": myosuite_path + "/assets/hand/myo_hand_die.mjb",
-        "normalize_act": True,
-        "frame_skip": 5,
-        "goal_pos": (-0.010, 0.010),  # +- 1 cm
-        "goal_rot": (-1.57, 1.57),  # +-90 degrees
-    },
-)
-
-# MyoChallenge Die: Phase2 env
-gym.envs.registration.register(
-    id="CustomMyoChallengeDieReorientP2-v0",
-    entry_point="envs.reorient:CustomReorientEnv",
-    max_episode_steps=150,
-    kwargs={
-        "model_path": myosuite_path + "/assets/hand/myo_hand_die.mjb",
-        "normalize_act": True,
-        "frame_skip": 5,
-        # Randomization in goals
-        'goal_pos': (-.020, .020),  # +- 2 cm
-        'goal_rot': (-3.14, 3.14),  # +-180 degrees
-        # Randomization in physical properties of the die
-        'obj_size_change': 0.007,  # +-7mm delta change in object size
-        'obj_friction_change': (0.2, 0.001, 0.00002)  # nominal: 1.0, 0.005, 0.0001
-    },
-)
-
-# MyoChallenge Baoding: Phase2 env
-gym.envs.registration.register(
-    id="CustomMyoChallengeBaodingP2-v1",
-    entry_point="envs.baoding:CustomBaodingP2Env",
-    max_episode_steps=200,
-    kwargs={
-        "model_path": myosuite_path + "/assets/hand/myo_hand_baoding.mjb",
-        "normalize_act": True,
-        "goal_time_period": (4, 6),
-        "goal_xrange": (0.020, 0.030),
-        "goal_yrange": (0.022, 0.032),
-        # Randomization in physical properties of the baoding balls
-        "obj_size_range": (0.018, 0.024),  # Object size range. Nominal 0.022
-        "obj_mass_range": (0.030, 0.300),  # Object weight range. Nominal 43 gms
-        "obj_friction_change": (0.2, 0.001, 0.00002),  # nominal: 1.0, 0.005, 0.0001
-        "task_choice": "random",
-    },
-)
-
-# MyoChallenge Baoding: MixtureModelEnv
-gym.envs.registration.register(
-    id="MixtureModelBaoding-v1",
-    entry_point="envs.baoding:MixtureModelBaodingEnv",
-    max_episode_steps=200,
-    kwargs={
-        "model_path": myosuite_path + "/assets/hand/myo_hand_baoding.mjb",
-        "normalize_act": True,
-        "goal_time_period": (4, 6),
-        "goal_xrange": (0.020, 0.030),
-        "goal_yrange": (0.022, 0.032),
-        # Randomization in physical properties of the baoding balls
-        "obj_size_range": (0.018, 0.024),  # Object size range. Nominal 0.022
-        "obj_mass_range": (0.030, 0.300),  # Object weight range. Nominal 43 gms
-        "obj_friction_change": (0.2, 0.001, 0.00002),  # nominal: 1.0, 0.005, 0.0001
-        "task_choice": "random",
+        'model_path': myosuite_path + '/assets/myo_sim/arm/myoarm_object_v0.16(mj237).mjb',
+        'normalize_act': True,
+        'frame_skip': 5,
+        'pos_th': 0.1,  # cover entire base of the receptacle
+        'rot_th': np.inf,  # ignore rotation errors
+        'target_xyz_range': {'high': [0.2, -.35, 0.9], 'low': [0.0, -.1, 0.9]},
+        'target_rxryrz_range': {'high': [0.0, 0.0, 0.0], 'low': [0.0, 0.0, 0.0]}
     },
 )
 
@@ -111,7 +126,7 @@ gym.envs.registration.register(
         # 'obj_geom_range': {'high': [.025, .025, .025], 'low': [.015, 0.015, 0.015]},
         # 'obj_mass_range': {'high': 0.200, 'low': 0.050},  # 50gms to 200 gms
         # 'obj_friction_range': {'high': [1.2, 0.006, 0.00012], 'low': [0.8, 0.004, 0.00008]}
-    }
+    },
 )
 
 # Elbow posing ==============================
