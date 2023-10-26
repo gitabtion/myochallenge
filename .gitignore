@@ -139,6 +139,7 @@ dmypy.json
 /data
 /trained_models
 /wandb
+src/wandb
 
 # Tensorboard
 .monitor.csv
