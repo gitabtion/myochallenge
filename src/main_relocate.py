@@ -1,8 +1,9 @@
+import copy
 import os
 import shutil
 from datetime import datetime
 from typing import Union, Type, Optional
-
+import random
 import numpy as np
 from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
@@ -17,39 +18,41 @@ from metrics.custom_callbacks import EnvDumpCallback, EvalCallback
 from train.trainer import MyoTrainer
 
 # define constants
-ENV_NAME = "CustomMyoRelocateP1"
+ENV_NAME = "CustomMyoRelocateP2"
 
 now = datetime.now().strftime("%Y-%m-%d/%H-%M-%S")
 TENSORBOARD_LOG = os.path.join(ROOT_DIR, "output", "training", now)
 
 load_folder = os.path.join(ROOT_DIR, "trained_models/")
-PATH_TO_NORMALIZED_ENV = load_folder + "env_320000000_steps"
-PATH_TO_PRETRAINED_NET = load_folder + "rl_models_320000000_steps.zip"
+PATH_TO_NORMALIZED_ENV = load_folder + "rl_models_vecnormalize_598400000_steps.pkl"
+PATH_TO_PRETRAINED_NET = load_folder + "rl_models_598400000_steps.zip"
 
 # Reward structure and task parameters:
 config = {
     "obs_keys": ['hand_qpos', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
                  'rot_err'],
     "weighted_reward_keys": {
-        "pos_dist": 15.0,
+        "pos_dist": 10.0,
         "rot_dist": 0,
-        "act_reg": 0.01,
+        "act_reg": 0.00,
         "solved": 10.,
         "drop": -1.,
         # "sparse": 10.0,
         "keep_time": -200.,
+        # "reach_dist": 4,
+        # "norm_solved": 10.,
     },
     'normalize_act': True,
     'frame_skip': 5,
     'pos_th': 0.1,  # cover entire base of the receptacle
     'rot_th': np.inf,  # ignore rotation errors
     'qpos_noise_range': 0.01,  # jnt initialization range
-    'target_xyz_range': {'high': [0.3, -.1, 0.9], 'low': [0.0, -.45, 0.9]},
-    # 'target_rxryrz_range': {'high': [0.2, 0.2, 0.2], 'low': [-.2, -.2, -.2]},
-    # 'obj_xyz_range': {'high': [0.1, -.15, 0.95], 'low': [-0.1, -.35, 0.95]},
-    # 'obj_geom_range': {'high': [.025, .025, .025], 'low': [.015, 0.015, 0.015]},
-    'obj_mass_range': {'high': 0.200, 'low': 0.050},  # 50gms to 200 gms
-    # 'obj_friction_range': {'high': [1.2, 0.006, 0.00012], 'low': [0.8, 0.004, 0.00008]}
+    'target_xyz_range': {'high': [0.3, -.1, 1.05], 'low': [0.0, -.45, 0.9]},
+    'target_rxryrz_range': {'high': [0.2, 0.2, 0.2], 'low': [-.2, -.2, -.2]},
+    'obj_xyz_range': {'high': [0.1, -.28, 1.0], 'low': [-0.1, -.35, 1.0]},
+    'obj_geom_range': {'high': [.025, .025, .025], 'low': [.015, 0.015, 0.015]},
+    'obj_mass_range': {'high': 0.250, 'low': 0.050},  # 50gms to 200 gms
+    'obj_friction_range': {'high': [1.2, 0.006, 0.00012], 'low': [0.8, 0.004, 0.00008]}
 }
 
 
@@ -58,9 +61,8 @@ def make_parallel_envs(env_config, num_env, start_index=0,
                        vec_env_cls: Optional[Type[Union[DummyVecEnv, SubprocVecEnv]]] = None, seed=42):
     def make_env(rank):
         def _thunk():
-            env = EnvironmentFactory.create(ENV_NAME, **env_config)
+            env = EnvironmentFactory.create(ENV_NAME, seed=seed + rank, **env_config)
             env = Monitor(env, TENSORBOARD_LOG)
-            env.seed(seed + rank)
             return env
 
         return _thunk
@@ -70,10 +72,10 @@ def make_parallel_envs(env_config, num_env, start_index=0,
 
 if __name__ == "__main__":
     batch_size = 4096
-    n_train_env, n_eval_env = 128, 10
+    n_train_env, n_eval_env = 64, 10
     gamma = 0.99
-    n_steps = batch_size//n_train_env
-    lr = 5e-5
+    n_steps = batch_size // n_train_env
+    lr = 1e-4
 
     # ensure tensorboard log directory exists and copy this file to track
     os.makedirs(TENSORBOARD_LOG, exist_ok=True)
@@ -104,13 +106,13 @@ if __name__ == "__main__":
     eval_callback = EvalCallback(
         eval_env=eval_env,
         n_eval_episodes=n_eval_env,
-        eval_freq=100_000,
+        eval_freq=50_000,
         verbose=1,
         save_path=TENSORBOARD_LOG,
     )
 
     checkpoint_callback = CheckpointCallback(
-        save_freq=100_000,
+        save_freq=50_000,
         save_path=TENSORBOARD_LOG,
         save_vecnormalize=True,
         name_prefix='rl_models',

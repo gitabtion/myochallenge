@@ -20,7 +20,7 @@ from .environment_factory import EnvironmentFactory
 
 
 class CustomRelocateEnv(RelocateEnvV0):
-    DEFAULT_OBS_KEYS = ['hand_qpos_corrected', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
+    DEFAULT_OBS_KEYS = ['hand_qpos', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
                         'rot_err']
     DEFAULT_RWD_KEYS_AND_WEIGHTS = {
         "pos_dist": 10.0,
@@ -62,9 +62,11 @@ class CustomRelocateEnv(RelocateEnvV0):
             ('act_reg', -1. * act_mag),
             ('sparse', -rot_dist - 10.0 * pos_dist),
             ('solved', solved),
-            ('drop', reach_dist > 0.05),
+            ('drop', (reach_dist > 0.05) and ~solved),
             ('done', drop),
-            ('keep_time', drop * (1.5-use_time))
+            ('keep_time', drop * (1.5 - use_time)),
+            ('norm_solved', solved * (use_time > 0.8)),
+            ('reach_dist', -1 * (2 * reach_dist) + 1. / ((2 * reach_dist) ** 2 + 1))
         ))
         rwd_dict['dense'] = np.sum([wt * rwd_dict[key] for key, wt in self.rwd_keys_wt.items()], axis=0)
 
@@ -76,6 +78,6 @@ class CustomRelocateEnv(RelocateEnvV0):
         return rwd_dict
 
     def render(self, mode='rgb_array', height=240, width=320, camera_id=1):
-        assert mode == 'rgb_array', f"env only supports rgb_array rendering, but get {mode}"
+        # assert mode == 'rgb_array', f"env only supports rgb_array rendering, but get {mode}"
         frame = self.sim.renderer.render_offscreen(width=640, height=480, camera_id=camera_id)
         return frame

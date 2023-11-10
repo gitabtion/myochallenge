@@ -1,3 +1,0 @@
-Fri Oct 20 19:34:17 2023
-ERROR: could not create window
-

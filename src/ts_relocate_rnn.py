@@ -31,13 +31,15 @@ config = {
     "obs_keys": ['hand_qpos_corrected', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
                  'rot_err'],
     "weighted_reward_keys": {
-        "pos_dist": 15.0,
+        "pos_dist": 10.0,
         "rot_dist": 0,
-        "act_reg": 0.01,
-        "solved": 100.,
+        "act_reg": 0.00,
+        "solved": 10.,
         "drop": -1.,
         # "sparse": 10.0,
         "keep_time": -200.,
+        # "reach_dist": 4,
+        # "norm_solved": 10.,
     },
     'normalize_act': True,
     'frame_skip': 5,
@@ -76,19 +78,19 @@ if __name__ == '__main__':
     os.makedirs(TENSORBOARD_LOG, exist_ok=True)
     shutil.copy(os.path.abspath(__file__), TENSORBOARD_LOG)
 
-    lr, epoch, batch_size = 5e-5, 400, 2048
-    train_num, test_num = 2, 2
-    gamma, n_step, target_freq = 0.999, 3, 320
+    lr, epoch, batch_size = 1e-4, 400, 4096
+    train_num, test_num = 64, 10
+    gamma = 0.999
     buffer_size = 624000
     eps_train, eps_test = 0.1, 0.05
-    step_per_epoch, step_per_collect = 1024000, 2048
+    step_per_epoch, step_per_collect = 1024000, batch_size
     logger = ts.utils.WandbLogger(
         project='ts_arm',
         run_id=now.replace('/', '_'),
         config=config)
     logger.load(SummaryWriter(TENSORBOARD_LOG))
 
-    envs = make_parallel_envs(config, train_num, vec_env_cls=DummyVectorEnv)
+    envs = make_parallel_envs(config, train_num, vec_env_cls=ShmemVectorEnv)
     envs = VectorEnvNormObs(envs)
 
     eval_envs = make_parallel_envs(config, test_num, vec_env_cls=DummyVectorEnv)
@@ -117,9 +119,9 @@ if __name__ == '__main__':
         device='cuda',
     ).to('cuda')
     actor_critic = ActorCritic(actor, critic)
-    optim = torch.optim.Adam(actor_critic.parameters(), lr=lr)
+    optim = torch.optim.AdamW(actor_critic.parameters(), lr=lr, weight_decay=5e-8)
 
-    policy = ts.policy.SACPolicy(
+    policy = ts.policy.PPOPolicy(
         actor=actor,
         critic=critic,
         dist_fn=dist,
@@ -146,7 +148,7 @@ if __name__ == '__main__':
         repeat_per_collect=4,
         episode_per_test=test_num,
         batch_size=batch_size,
-        step_per_collect=batch_size,
+        step_per_collect=step_per_collect,
         save_best_fn=save_best_fn,
         logger=logger,
         test_in_train=False, ).run()

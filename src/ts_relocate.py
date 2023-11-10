@@ -31,13 +31,15 @@ config = {
     "obs_keys": ['hand_qpos_corrected', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
                  'rot_err'],
     "weighted_reward_keys": {
-        "pos_dist": 15.0,
+        "pos_dist": 10.0,
         "rot_dist": 0,
-        "act_reg": 0.01,
-        "solved": 100.,
+        "act_reg": 0.00,
+        "solved": 10.,
         "drop": -1.,
         # "sparse": 10.0,
         "keep_time": -200.,
+        # "reach_dist": 4,
+        # "norm_solved": 10.,
     },
     'normalize_act': True,
     'frame_skip': 5,
@@ -54,14 +56,15 @@ config = {
 
 
 def make_parallel_envs(env_config, num_env, start_index=0,
-                       vec_env_cls: Optional[Type[Union[DummyVectorEnv, SubprocVectorEnv, ShmemVectorEnv]]] = None, seed=42):
+                       vec_env_cls: Optional[Type[Union[DummyVectorEnv, SubprocVectorEnv, ShmemVectorEnv]]] = None,
+                       seed=42):
     def make_env(rank):
         def _thunk():
             env = EnvironmentFactory.create("CustomMyoRelocateP1", **env_config)
-            env = gym.make("GymV21Environment-v0", env_id="CustomMyoChallengeRelocateP1-v0", env=env)
+            env = gym.make("GymV21Environment-v0", env_id="CustomMyoChallengeRelocateP1-v1",
+                           env=env)
             env.gym_env.seed(seed + rank)
             return env
-
 
         return _thunk
 
@@ -72,24 +75,23 @@ def dist(*logits):
     return Independent(Normal(*logits), 1)
 
 
-
 if __name__ == '__main__':
     os.makedirs(TENSORBOARD_LOG, exist_ok=True)
     shutil.copy(os.path.abspath(__file__), TENSORBOARD_LOG)
 
-    lr, epoch, batch_size = 5e-5, 400, 2048
-    train_num, test_num = 128, 10
-    gamma, n_step, target_freq = 0.999, 3, 320
+    lr, epoch, batch_size = 1e-4, 1000, 2048
+    train_num, test_num = 2, 2
+    gamma = 0.999
     buffer_size = 624000
     eps_train, eps_test = 0.1, 0.05
-    step_per_epoch, step_per_collect = 1024000, 2048
+    step_per_epoch, step_per_collect = 1024000, batch_size
     logger = ts.utils.WandbLogger(
         project='ts_arm',
         run_id=now.replace('/', '_'),
         config=config)
     logger.load(SummaryWriter(TENSORBOARD_LOG))
 
-    envs = make_parallel_envs(config, train_num, vec_env_cls=ShmemVectorEnv)
+    envs = make_parallel_envs(config, train_num, vec_env_cls=DummyVectorEnv)
     envs = VectorEnvNormObs(envs)
 
     eval_envs = make_parallel_envs(config, test_num, vec_env_cls=DummyVectorEnv)
@@ -102,8 +104,8 @@ if __name__ == '__main__':
     action_shape = env.action_space.shape or env.action_space.n
     net_a = Net(
         state_shape,
-        hidden_sizes=[128, 128, 128],
-        activation=nn.ReLU,
+        hidden_sizes=[128, 256, 128],
+        activation=nn.GELU,
         device='cuda',
     )
     actor = ActorProb(
@@ -114,13 +116,13 @@ if __name__ == '__main__':
     ).to('cuda')
     net_c = Net(
         state_shape,
-        hidden_sizes=[128, 128, 128],
-        activation=nn.ReLU,
+        hidden_sizes=[128, 256, 128],
+        activation=nn.GELU,
         device='cuda',
     )
     critic = Critic(net_c, device='cuda').to('cuda')
     actor_critic = ActorCritic(actor, critic)
-    optim = torch.optim.Adam(actor_critic.parameters(), lr=lr)
+    optim = torch.optim.AdamW(actor_critic.parameters(), lr=lr, weight_decay=5e-8)
 
     policy = ts.policy.PPOPolicy(
         actor=actor,
@@ -130,6 +132,8 @@ if __name__ == '__main__':
         discount_factor=gamma,
         action_space=env.action_space,
         reward_normalization=True,
+        max_grad_norm=0.2,
+        eps_clip=0.2,
     )
     train_collector = ts.data.Collector(policy, envs, ts.data.VectorReplayBuffer(buffer_size, train_num),
                                         exploration_noise=True)
@@ -140,6 +144,7 @@ if __name__ == '__main__':
         state = {"model": policy.state_dict(), "obs_rms": envs.get_obs_rms()}
         torch.save(state, os.path.join(TENSORBOARD_LOG, "policy.pth"))
 
+
     result = ts.trainer.OnpolicyTrainer(
         policy=policy,
         train_collector=train_collector,
@@ -149,7 +154,7 @@ if __name__ == '__main__':
         repeat_per_collect=4,
         episode_per_test=test_num,
         batch_size=batch_size,
-        step_per_collect=int(batch_size*128/train_num),
+        step_per_collect=step_per_collect,
         save_best_fn=save_best_fn,
         logger=logger,
         test_in_train=False, ).run()
