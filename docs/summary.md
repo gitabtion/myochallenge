@@ -2,10 +2,8 @@
 
 ## Key components of the final model
 
-1. On-policy learning with Recurrent PPO
-2. Reference State Initialization (RSI) to guide initial exploration and stabilize learning
-3. Curriculum learning to guide and stabilize training throughout
-4. (Optional) Hierarchical mixture of ensembles for dealing with specialized tasks in phase 2
+1. On-policy learning with PPO
+2. Curriculum learning to guide and stabilize training throughout
 
 ### 1. Recurrent LSTM layers
 
@@ -79,39 +77,20 @@ We have also included all of our models and classifier for the hierarchical mixt
 
 We use [RecurrentPPO from Stable Baselines 3](https://github.com/Stable-Baselines-Team/stable-baselines3-contrib/blob/c75ad7dd58b7634e48c9e345fca8ebb06af3495e/sb3_contrib/ppo_recurrent/ppo_recurrent.py) as our base algorithm with the following architecture for both the actor and the critic with nothing shared between the two:
 
-obs --> 256 LSTM --> 256 Linear --> 256 Linear --> output
+obs --> 128 Linear --> 256 Linear --> 128 Linear --> output
 
 All the layers have ReLU activation functions and the output, of course, is the value for the critic and the 39-dimensional continuous actions for the actor.
 
 #### Hyperparameters
 
-Initially, i.e. before step 25 in the [curriculum for Phase 2](../trained_models/curriculum_steps_complete_baoding_winner) and all of Phase 1, we used the following hyperparameters:
-
-| Hyperparameter                             | Value                                                      |
-| ------------------------------------------ | ---------------------------------------------------------- |
-| Discount factor $\gamma$                   | 0.99                                                       |
-| Generalized Advantage Estimation $\lambda$ | 0.9                                                        |
-| Entropy regularization coefficient         | 3.62109e-6                                                 |
-| PPO clipping parameter $\lambda$           | 0.3                                                        |
-| Optimizer                                  | Adam                                                       |
-| learning rate                              | 2.6e-5                                                     |
-| Batch size                                 | 128 (sequential) transitions/env $\times$ 16 envs = 2048   |
-| minibatch size                             | 32 (sequential) transitions                                |
-| state-dependent exploration                | True                                                       |
-| max grad norm                              | 0.835671                                                   |
-
-
-For phase 2, one of the key changes that we had to make in order to be successful at faster rotation periods with noisy task physics was to use much larger batch sizes. The reason for using larger batch sizes was to allow our our networks to step meaningfully in the loss landscape by considering all possible scenarios. We used these from step 25 in the [curriculum](../trained_models/curriculum_steps_complete_baoding_winner) for phase 2 all the way to the end:
-
-| Hyperparameter                             | Value                                                      |
-| ------------------------------------------ | ---------------------------------------------------------- |
-| Discount factor $\gamma$                   | 0.99                                                       |
-| Generalized Advantage Estimation $\lambda$ | 0.95                                                       |
-| Entropy regularization coefficient         | 3e-5                                                       |
-| PPO clipping parameter $\lambda$           | 0.2                                                        |
-| Optimizer                                  | Adam                                                       |
-| learning rate                              | 2.5e-5                                                     |
-| Batch size                                 | 1024 (sequential) transitions/env $\times$ 16 envs = 65536 |
-| minibatch size                             | 1024 (sequential) transitions                              |
-| state-dependent exploration                | True                                                       |
-| max grad norm                              | 0.8                                                        |
+| Hyperparameter                             | Value |
+|--------------------------------------------|-------|
+| Discount factor $\gamma$                   | 0.999 |
+| Generalized Advantage Estimation $\lambda$ | 0.95  |
+| Entropy regularization coefficient         | 0.001 |
+| vf coefficient                             | 0.2   |
+| clip range                                 | 0.2   |
+| Optimizer                                  | Adam  |
+| learning rate                              | 5e-5  |
+| Batch size                                 | 4096  |
+| max grad norm                              | 0.5   |

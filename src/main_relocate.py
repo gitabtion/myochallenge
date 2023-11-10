@@ -32,15 +32,15 @@ config = {
     "obs_keys": ['hand_qpos', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
                  'rot_err'],
     "weighted_reward_keys": {
-        "pos_dist": 10.0,
+        "pos_dist": 1.0,
         "rot_dist": 0,
-        "act_reg": 0.00,
-        "solved": 10.,
-        "drop": -1.,
+        "act_reg": 0.01,
+        # "solved": 10.,
+        # "drop": -1.,
         # "sparse": 10.0,
-        "keep_time": -200.,
+        # "keep_time": -200.,
         # "reach_dist": 4,
-        # "norm_solved": 10.,
+        "norm_solved": 10.,
     },
     'normalize_act': True,
     'frame_skip': 5,
@@ -73,9 +73,9 @@ def make_parallel_envs(env_config, num_env, start_index=0,
 if __name__ == "__main__":
     batch_size = 4096
     n_train_env, n_eval_env = 64, 10
-    gamma = 0.99
+    gamma = 0.999
     n_steps = batch_size // n_train_env
-    lr = 1e-4
+    lr = 5e-5
 
     # ensure tensorboard log directory exists and copy this file to track
     os.makedirs(TENSORBOARD_LOG, exist_ok=True)
