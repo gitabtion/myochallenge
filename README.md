@@ -9,7 +9,8 @@ Here we have documented a summary of our approach including our key insights and
 
 ## Software requirements
 
-Listed in `requirements.txt`. Note that there is a version error with some packages, e.g. `stable_baselines3`, requiring later versions of `gym` which `myosuite` is incompatible with. If your package manager automatically updates gym, do a `pip install gym==0.13.0` (or equivanlent with your package manager) at the end and this should work fine. If you experience any issues, feel free to open an issue on this repository or contact us via email.
+1. Listed in `requirements.txt`. Note that there is a version error with some packages, e.g. `stable_baselines3`, requiring later versions of `gym` which `myosuite` is incompatible with. If your package manager automatically updates gym, do a `pip install gym==0.13.0` (or equivanlent with your package manager) at the end and this should work fine. If you experience any issues, feel free to open an issue on this repository or contact us via email.
+2. download [myoarm_object_v0.16(mj237).mjb](https://github.com/MyoHub/myo_sim/blob/aff0bc096d98085ee0a6befd613cc9fbff024944/arm/myoarm_object_v0.16(mj237).mjb) and put it to ``data/myosuite/assets/myo_sim/arm``
 
 ## Usage
 
