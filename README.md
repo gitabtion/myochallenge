@@ -2,8 +2,8 @@
 
 This is the code repository for winning the Boading ball task of the [MyoChallenge 2023](https://sites.google.com/view/myosuite/myochallenge/myochallenge-2023). Our team was named [CarbonSiliconAI](https://carbonsilicon.ai/)
 
-Our team comprised:
-- Heng Cai, Zhuo Yang and Wei Dang, CarbonSiliconAI
+Our team comprised (Manipulation track):
+- Heng Cai, Jianfei Song, Zhuo Yang and Wei Dang, CarbonSiliconAI
 
 Here we have documented a summary of our approach including our key insights and intuitions along with all the training steps and hyperparameters [here](docs/summary.md).
 

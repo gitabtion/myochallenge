@@ -5,42 +5,24 @@
 1. On-policy learning with PPO
 2. Curriculum learning to guide and stabilize training throughout
 
-### 1. Recurrent LSTM layers
+### 1. On-policy learning with PPO
 
-The first key component in our model is the recurrent units in both the actor and critic networks of our on-policy algorithm. The first layer in each was an LSTM layer, which was crucial to deal with partial observations not only because the environment had no velocity or acceleration information, but also because the actions have really long-term consequences - effects of actions last dozens of timesteps after it has been originally executed.
+First, We conducted highly parallel on-policy training using the Stable Baselines3 Proximal Policy Optimization (PPO) algorithm. Through reward adjustment, we successfully achieved effective manipulation for grasping tasks.
 
-### 2. Reference State Initiatlization (RSI)
+### 2. Curriculum learning
 
-The second key component we used was Reference State Initialization (RSI). The schematic below ([source](https://bair.berkeley.edu/blog/2018/04/10/virtual-stuntman/)) helps us in summarizing the idea:
-<img src="images/FSI.png" width="500"> <img src="images/RSI.png" width="500">
+Second, we used a curriculum of training that gradually introduced the tougher aspects of the task.
 
-The insight here is that if we initialize the balls at various points in the target trajectory during training, then the model will experience a much higher density of rewards throughout the final trajectory much more efficiently.
+Based on the progress made in the P1 checkpoint, we have designed a six-step plan for the second phase of curriculum learning:
 
-### 3. Curriculum learning
+- Step 1: We think that the first phase is a good initial task, for step 1, we using the checkpoint obtained from P1 training directly.
+- Step 2: In this step, we will ensure that the target_xyz_range, obj_geom_range, and obj_friction_range are consistent with the P2 environment.
+- Step 3: Similarly, we will align the qpos_noise_range, target_rxryrz_range, and obj_mass_range with the P2 environment.
+- Step 4: Based on our experimental observations, changes in obj_xyz_range will disrupt the pre-grasp state. We have modified the initialization range of obj_xyz_range to position it in mid-air and present it in a pre-grasp state, in order to reduce the difficulty of grasping.
+- Step 5: Based on the above steps, we believe that the model is already capable of preliminarily grasping objects in the P2 simulation environment. In this step, we proceed with further training directly in the P2 simulation environment.
+- Step 6: To further enhance the model's performance, we increased the values of obj_xyz_range, obj_geom_range, and obj_mass_range, aiming to encourage the model to possess stronger generalization capabilities.
 
-Third, we used a curriculum of training that gradually introduced the tougher aspects of the task.
-
-For phase 1, we increased the rotation speed gradually following the intuition that once the dynamics are learnt by the recurrent units, it should be fairly easy to exploit the same dynamical modes by making rotation speed faster. As one would expect, RSI was only needed at slower speeds since the models were already doing full rotations at faster speeds and hence had already explored all of those. The exact curriculum we used is in the Appendix.
-
-For phase 2, following the same intuition, at slower rotation periods, we gradually introduced domain randomization, i.e. noisy task physics including ball size & mass, friction, and how far the targets spawned from the balls. Once the tasks were learned well at slower speeds, we gradually increased the rotation speeds. Arguably, a large portion of training went into adapting to the noisy physics, and one of the key changes that we had to make in order to be successful at faster rotation periods with noisy task physics was to use much larger batch sizes for our networks to step meaningfully in the loss landscape. The full list of hyperparameters and links to the models are in the appendix.
-
-### 4. Hierarchical mixture of expert ensembles
-
-> :warning: Optional and experimental
->
-> Note that we didn't have enough time to deploy this fully in the final configuration that we desired. In fact, our single model that performs the final task easily scored over 50%. The gains from this approach were marginal and ultimately not necessary for winning the Baoding balls challenge. Regardless, we list it here for completeness.
-
-The final insight we tried to incorporate, albeit not so successfully, is to use a hierarchical model with a base network and specialist networks for subsets of the main task, along with a classifier that we trained to predict the identity of the relevant subset.
-
-There were a couple of observations that led us to choose this approach. Crucially, we noticed that at faster rotation speeds, the networks often "forgot" some aspect of the tasks to maximize performance on the others. Here are some examples:
-
-- one of the tasks, usually the hold task
-- target positions far from the balls' initial locations
-  - this was particularly disruptive in the hold task because the network learned to make the balls roughly follow the vector given by the "target error". Since the targets do not move for the hold task, the balls run into each other when the targets spawn roughly over $0.6\pi$ away from the balls.
-
-To separately target these special cases, we trained a classifier to predict the identity of the task (hold vs other) from the first $k$ observations, and also trained a hold network to take over from the base network at timestep $k$ to perform the task. Even with this change, the hold network did not perform well at large separations of the initial ball and target positions. So we trained another set of specialist hold networks that were preferentially exposed to targets and balls spawning roughly opposite of each other, and used this ensemble of hold networks with the base network and classifier. 
-
-For the very final submission that scored 55%, we also used an ensemble of base networks along with the classifier and the ensemble of hold networks all of which can be found [here](../trained_models/winning_ensemble).
+- For further details, including hyperparameters, rewards for each step, and checkpoints, please refer to the appendix.
 
 ## Appendix
 
@@ -48,38 +30,182 @@ For the very final submission that scored 55%, we also used an ensemble of base 
 
 #### Phase 1
 
-![curriculum](images/Phase1_curriculum_tensorboard.png)
+To ensure sufficient proximity between the hand and the object, we incorporated an additional reward term called "reach." This adjustment was implemented to incentivize the model to position the palm adequately close to the object.
+```python
+reach = min(0, 0.05 - np.linalg.norm(obs_dict['reach_err']))
+```
 
-1. Hold the balls fixed, initialising them at random phases along the cycle (i.e. RSI, pink).
-2. Rotate the balls with period 20, initialising with RSI (orange)
-3. Rotate the balls with period 10, initialising with RSI (green)
-4. Rotate the balls with period 8, initialising with RSI (blue)
-5. Rotate the balls with period 7, initialising at a single fixed position (similar but not exactly the same initialisation as the original task, where there is some small noise in initialisation; purple)
-6. Rotate the balls with period 5, initialising at a single fixed position (idem task 5; yellow)
-7. Original task for phase 1 (black)
+The following are the weight parameters for each reward term:
+```python
+"weighted_reward_keys": {
+        "act_reg": 1,
+        "solved": 100.,
+        "sparse": 100.0,
+        "reach": 10000,
+}
+```
 
 #### Phase 2
 
-All the trained models, environment configurations, main files, and tensorboard logs are all present in the [trained_models/curriculum_steps_complete_baoding_winner](../trained_models/curriculum_steps_complete_baoding_winner) folder. We are omitting the figure from this document because it wouldn't be possible to make sense of the single plot. Roughly, we followed  these steps in order:
+All the trained models, environment configurations, main files, and tensorboard logs are all present in the [trained_models/](../trained_models) folder. 
 
-- Steps 01-14 train the model to rotate the balls in both directions starting from RSI static (hold) by slowly decreasing the period to (4.5, 5.5).
-  - This was trained pre-emptively before the environment for phase 2 was released since we figured that one week would probably not be enough to train for phase 2.
-- Steps 15 & 16 introduce the non-overlapping targets and balls.
-- Step 17 starts retraining at a slower period 25 with slightly non-overlapping balls and targets.
-- Steps 18-22 train the model at period 20 by introducing a the fully-noisy task physics and non-overlapping balls & targets (deviating by up to $0.6\pi$).
-- Steps 23-33 decrease the period to 8 and then to (4,6) with the full noise as in phase 2, i.e. final task. Here, we also switched to using a new set of hyperparameters which much bigger batch sizes to average over all the noise across task conditions in the gradient updates.
+The following are environment config:
 
-We have also included all of our models and classifier for the hierarchical mixture of ensembles in the [trained_models/winning_ensemble](../trained_models/winning_ensemble) folder that can be evaluated using `python src/eval_mixture_of_ensembles.py`. This was the model that scored 55% and is currently listed #1 on the leaderboard.
+- step1:
+```python
+"weighted_reward_keys": {
+        "act_reg": 1,
+        "solved": 100.,
+        "sparse": 100.0,
+        "reach": 10000,
+}
+```
+
+- step2
+```python
+config = {
+    "obs_keys": ['hand_qpos', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
+                 'rot_err'],
+    "weighted_reward_keys": {
+        "pos_dist": 15.0,
+        "rot_dist": 0,
+        "act_reg": 0.01,
+        "solved": 10.,
+        "drop": -1.,
+        # "sparse": 10.0,
+        "keep_time": -200.,
+    },
+    'normalize_act': True,
+    'frame_skip': 5,
+    'pos_th': 0.1,  # cover entire base of the receptacle
+    'rot_th': np.inf,  # ignore rotation errors
+    'target_xyz_range': {'high': [0.3, -.1, 0.9], 'low': [0.0, -.45, 0.9]},
+    'obj_geom_range': {'high': [.025, .025, .025], 'low': [.015, 0.15, 0.15]},
+    'obj_friction_range': {'high': [1.2, 0.006, 0.00012], 'low': [0.8, 0.004, 0.00008]}
+}
+```
+- step3
+```python
+config = {
+    "obs_keys": ['hand_qpos', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
+                 'rot_err'],
+    "weighted_reward_keys": {
+        "pos_dist": 15.0,
+        "rot_dist": 0,
+        "act_reg": 0.00,
+        "solved": 10.,
+        "drop": -1.,
+        # "sparse": 10.0,
+        "keep_time": -200.,
+        # "reach_dist": 4,
+    },
+    'normalize_act': True,
+    'frame_skip': 5,
+    'pos_th': 0.1,  # cover entire base of the receptacle
+    'rot_th': np.inf,  # ignore rotation errors
+    'qpos_noise_range': 0.01,  # jnt initialization range
+    'target_xyz_range': {'high': [0.3, -.1, 0.9], 'low': [0.0, -.45, 0.9]},
+    'target_rxryrz_range': {'high': [0.2, 0.2, 0.2], 'low': [-.2, -.2, -.2]},
+    'obj_geom_range': {'high': [.025, .025, .025], 'low': [.015, 0.015, 0.015]},
+    'obj_mass_range': {'high': 0.200, 'low': 0.050},  # 50gms to 200 gms
+    'obj_friction_range': {'high': [1.2, 0.006, 0.00012], 'low': [0.8, 0.004, 0.00008]}
+}
+```
+- step4
+```python
+config = {
+    "obs_keys": ['hand_qpos', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
+                 'rot_err'],
+    "weighted_reward_keys": {
+        "pos_dist": 10.0,
+        "rot_dist": 0,
+        "act_reg": 0.00,
+        "solved": 10.,
+        "drop": -1.,
+        # "sparse": 10.0,
+        "keep_time": -200.,
+        # "reach_dist": 4,
+    },
+    'normalize_act': True,
+    'frame_skip': 5,
+    'pos_th': 0.1,  # cover entire base of the receptacle
+    'rot_th': np.inf,  # ignore rotation errors
+    'qpos_noise_range': 0.01,  # jnt initialization range
+    'target_xyz_range': {'high': [0.3, -.1, 0.9], 'low': [0.0, -.45, 0.9]},
+    'target_rxryrz_range': {'high': [0.2, 0.2, 0.2], 'low': [-.2, -.2, -.2]},
+    'obj_xyz_range': {'high': [-0.02, -.20, 1.05], 'low': [-0.03, -.23, 1.05]},
+    'obj_geom_range': {'high': [.025, .025, .025], 'low': [.015, 0.015, 0.015]},
+    'obj_mass_range': {'high': 0.200, 'low': 0.050},  # 50gms to 200 gms
+    'obj_friction_range': {'high': [1.2, 0.006, 0.00012], 'low': [0.8, 0.004, 0.00008]}
+}
+```
+- step5
+```python
+config = {
+    "obs_keys": ['hand_qpos', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
+                 'rot_err'],
+    "weighted_reward_keys": {
+        "pos_dist": 10.0,
+        "rot_dist": 0,
+        "act_reg": 0.00,
+        # "solved": 10.,
+        "drop": -1.,
+        # "sparse": 10.0,
+        "keep_time": -200.,
+        # "reach_dist": 4,
+        "norm_solved": 10.,
+    },
+    'normalize_act': True,
+    'frame_skip': 5,
+    'pos_th': 0.1,  # cover entire base of the receptacle
+    'rot_th': np.inf,  # ignore rotation errors
+    'qpos_noise_range': 0.01,  # jnt initialization range
+    'target_xyz_range': {'high': [0.3, -.1, 1.05], 'low': [0.0, -.45, 0.9]},
+    'target_rxryrz_range': {'high': [0.2, 0.2, 0.2], 'low': [-.2, -.2, -.2]},
+    'obj_xyz_range': {'high': [0.1, -.15, 1.0], 'low': [-0.1, -.35, 1.0]},
+    'obj_geom_range': {'high': [.025, .025, .025], 'low': [.015, 0.015, 0.015]},
+    'obj_mass_range': {'high': 0.200, 'low': 0.050},  # 50gms to 200 gms
+    'obj_friction_range': {'high': [1.2, 0.006, 0.00012], 'low': [0.8, 0.004, 0.00008]}
+}
+```
+- step6
+```python
+config = {
+    "obs_keys": ['hand_qpos', 'hand_qvel', 'obj_pos', 'goal_pos', 'pos_err', 'obj_rot', 'goal_rot',
+                 'rot_err'],
+    "weighted_reward_keys": {
+        "pos_dist": 1.0,
+        "rot_dist": 0,
+        "act_reg": 0.01,
+        # "solved": 10.,
+        # "drop": -1.,
+        # "sparse": 10.0,
+        # "keep_time": -200.,
+        # "reach_dist": 4,
+        "norm_solved": 10.,
+    },
+    'normalize_act': True,
+    'frame_skip': 5,
+    'pos_th': 0.1,  # cover entire base of the receptacle
+    'rot_th': np.inf,  # ignore rotation errors
+    'qpos_noise_range': 0.01,  # jnt initialization range
+    'target_xyz_range': {'high': [0.3, -.1, 1.05], 'low': [0.0, -.45, 0.9]},
+    'target_rxryrz_range': {'high': [0.2, 0.2, 0.2], 'low': [-.2, -.2, -.2]},
+    'obj_xyz_range': {'high': [0.15, -.1, 1.03], 'low': [-0.15, -.4, 0.95]},
+    'obj_geom_range': {'high': [.03, .03, .03], 'low': [.01, 0.01, 0.01]},
+    'obj_mass_range': {'high': 0.250, 'low': 0.050},  # 50gms to 200 gms
+    'obj_friction_range': {'high': [1.2, 0.006, 0.00012], 'low': [0.8, 0.004, 0.00008]}
+}
+```
+
 
 ### Architecture, algorithm, and hyperparameters
 
 #### Architecture and algorithm
 
-We use [RecurrentPPO from Stable Baselines 3](https://github.com/Stable-Baselines-Team/stable-baselines3-contrib/blob/c75ad7dd58b7634e48c9e345fca8ebb06af3495e/sb3_contrib/ppo_recurrent/ppo_recurrent.py) as our base algorithm with the following architecture for both the actor and the critic with nothing shared between the two:
+We use [PPO from Stable Baselines 3](https://github.com/DLR-RM/stable-baselines3/blob/v1.6.2/stable_baselines3/ppo/ppo.py) as our base algorithm with the following architecture for both the actor and the critic with nothing shared between the two:
 
 obs --> 128 Linear --> 256 Linear --> 128 Linear --> output
-
-All the layers have ReLU activation functions and the output, of course, is the value for the critic and the 39-dimensional continuous actions for the actor.
 
 #### Hyperparameters
 
